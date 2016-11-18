@@ -1,0 +1,26 @@
+{
+  "context-menu": {
+    "atom-text-editor": [
+      {
+        "label": "Toggle keystone",
+        "command": "keystone:toggle"
+      }
+    ]
+  },
+  "menu": [
+    {
+      "label": "Packages",
+      "submenu": [
+        {
+          "label": "Keystone",
+          "submenu": [
+            {
+              "label": "Toggle",
+              "command": "keystone:toggle"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
