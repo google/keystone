@@ -17,6 +17,10 @@
             {
               "label": "Toggle",
               "command": "keystone:toggle"
+            },
+            {
+              "label": "Parse",
+              "command": "keystone:parse"
             }
           ]
         }

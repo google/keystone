@@ -1,4 +1,4 @@
-module Keystone exposing (..)
+port module Keystone exposing (..)
 
 import Html exposing (..)
 import Html.App as Html
@@ -17,23 +17,31 @@ main =
 
 init : (Model, Cmd Msg)
 init =
-   ( Model , Cmd.none)
+   (Model, Cmd.none)
+
+port notify : String -> Cmd msg
+
+-- Request a parse of the full input text
+port parse : (String -> msg) -> Sub msg
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  Sub.none
+  parse Parse
 
 
 type alias Model = { }
 
 
 type Msg = Reset
+  | Parse String
+
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     Reset -> (model, Cmd.none)
+    Parse text -> (model, notify text) -- TODO Implement this
 
 
 view : Model -> Html Msg
