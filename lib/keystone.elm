@@ -1,15 +1,14 @@
 port module Keystone exposing (..)
 
 import Html exposing (..)
-import Html.App as Html
 import Html.Attributes as Att exposing (..)
 -- import Html.Events exposing (onClick, onInput, onCheck)
 -- import String
 
 
-main : Program Never
+main : Program Never Model Msg
 main =
-  Html.program
+  program
    { init = init
    , view = view
    , update = update
