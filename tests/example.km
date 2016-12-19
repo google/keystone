@@ -1,0 +1,27 @@
+-- This file contains a raw Keystone model. For an example of Keystone models
+-- embedded in Markdown, see example.md.
+
+-- Comments start with the "--" delimiter.
+
+-- Components describe atomic units of the system decomposition.
+component ExampleComponentA is
+end ExampleComponentA;
+
+component ExampleComponentB is
+end ExampleComponentB;
+
+channel RestApi is
+end RestApi;
+
+-- Systems combine components and other systems into larger units, and may also
+-- contain channels that connect the components.
+system SimpleSystem is
+  PartA: ExampleComponentA;
+  PartB: ExampleComponentB;
+  connect PartA to PartB via RestApi;
+end SimpleSystem;
+
+system CompositeSystem is
+  Frontend: SimpleSystem;
+  Backend: ExampleComponentB;
+end CompositeSystem;

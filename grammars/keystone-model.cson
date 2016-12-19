@@ -1,0 +1,42 @@
+'scopeName': 'source.keystone-model'
+'name': 'Keystone Model'
+'fileTypes': ['km']
+'patterns': [
+  {
+    'begin': '(system|component|channel) +([^ ]+) +is'
+    'beginCaptures':
+      '2':
+        'name': 'variable.keystone'
+    'end': 'end +([^ ]+);'
+    'endCaptures':
+      '1':
+        'name': 'variable.keystone'
+    'name': 'keyword.control.start-block.keystone'
+    'patterns': [
+      {
+        'match': 'connect +([^ ]+) +to +([^ ]+) +via +([^ ]+);'
+        'captures':
+          '1':
+            'name': 'variable.keystone'
+          '2':
+            'name': 'variable.keystone'
+          '3':
+            'name': 'variable.keystone'
+        'name': 'keyword.control.keystone'
+      }
+      {
+        'match': '([^ ]+): ([^ ]+);'
+        'captures':
+          '1':
+            'name': 'variable.definition.keystone'
+          '2':
+            'name': 'meta.class.keystone'
+      }
+    ]
+  }
+
+  {
+    'match': '--[^\\n]*'
+    'name': 'comment.leading.keystone'
+  }
+]
