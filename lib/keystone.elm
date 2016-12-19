@@ -2,47 +2,64 @@ port module Keystone exposing (..)
 
 import Html exposing (..)
 import Html.Attributes as Att exposing (..)
--- import Html.Events exposing (onClick, onInput, onCheck)
--- import String
+import Model as Mdl exposing (..)
 
 
-main : Program Never Model Msg
+main : Program Never UiModel Msg
 main =
-  program
-   { init = init
-   , view = view
-   , update = update
-   , subscriptions = subscriptions}
+    program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
 
-init : (Model, Cmd Msg)
+
+init : ( UiModel, Cmd Msg )
 init =
-   (Model, Cmd.none)
+    ( UiModel, Cmd.none )
 
+
+{-|
+   Send a notification to the user.
+-}
 port notify : String -> Cmd msg
 
--- Request a parse of the full input text
+
+{-|
+   Request a parse of the given string, generally buffer text from Atom.
+-}
 port parse : (String -> msg) -> Sub msg
 
 
-subscriptions : Model -> Sub Msg
+subscriptions : UiModel -> Sub Msg
 subscriptions model =
-  parse Parse
+    parse Parse
 
 
-type alias Model = { }
+type alias UiModel =
+    {}
 
 
-type Msg = Reset
-  | Parse String
+type Msg
+    = Reset
+    | Parse String
 
 
-update : Msg -> Model -> (Model, Cmd Msg)
+update : Msg -> UiModel -> ( UiModel, Cmd Msg )
 update msg model =
-  case msg of
-    Reset -> (model, Cmd.none)
-    Parse text -> (model, notify text) -- TODO Implement this
+    case msg of
+        Reset ->
+            ( model, Cmd.none )
+
+        Parse text ->
+            ( model, notify text )
 
 
-view : Model -> Html Msg
+
+-- TODO Implement this
+
+
+view : UiModel -> Html Msg
 view model =
     div [ id "main", class "col-lg-6" ] [ text "Keystone! Yeah!" ]
