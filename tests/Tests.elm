@@ -47,10 +47,20 @@ parsing =
     describe "parsing"
         [ test "components can be parsed" <|
             \() ->
-                Expect.equal (Ok (DComponent "TestComp" []))
+                Expect.equal
+                    (Ok
+                        (DComponent "TestComp"
+                            [ SFulfill "DatabaseApi"
+                            , SRequire "MonitoringApi"
+                            ]
+                        )
+                    )
                     (doParse
                         component
-                        "component TestComp is\nend TestComp;"
+                        """component TestComp is
+                            fulfill DatabaseApi;
+                            require MonitoringApi;
+                          end TestComp;"""
                     )
         , test "interfaces can be parsed" <|
             \() ->
@@ -71,9 +81,11 @@ parsing =
                 Expect.equal
                     (Ok
                         (DSystem "TestSys"
-                            [ (SInstance "PartA" "TestComponentA")
-                            , (SInstance "PartB" "TestComponentB")
-                            , (SConnect "PartA" "PartB" "TestChan")
+                            [ SInstance "PartA" "TestComponentA"
+                            , SInstance "PartB" "TestComponentB"
+                            , SConnect "PartA" "PartB" "TestIface"
+                            , SFulfill "DatabaseApi"
+                            , SRequire "MonitoringApi"
                             ]
                         )
                     )
@@ -82,7 +94,9 @@ parsing =
                         """system TestSys is
                           PartA: TestComponentA;
                           PartB: TestComponentB;
-                          connect PartA to PartB via TestChan;
+                          connect PartA to PartB via TestIface;
+                          fulfill DatabaseApi;
+                          require MonitoringApi;
                         end TestSys;"""
                     )
         , test "blocks must start and end with the same name" <|
@@ -120,6 +134,48 @@ parsing =
                         end TestIface;
 
 
+                        """
+                    )
+        , test "models can contain many components" <|
+            \() ->
+                Expect.equal
+                    (Ok
+                        ([ DInterface "TestIface"
+                         , DComponent "TestComp" []
+                         , DSystem "TestSys"
+                            [ SInstance "PartA" "TestComponentA"
+                            , SInstance "PartB" "TestComponentB"
+                            , SConnect "PartA" "PartB" "TestIface"
+                            ]
+                         , DComponent "TestComp2" []
+                         ]
+                        )
+                    )
+                    (doParse
+                        rawModel
+                        """
+                        -- This is a comment!
+                        interface TestIface is
+
+                          -- This is an inline comment!
+                        end TestIface;
+
+                        component TestComp is
+                        end TestComp;
+
+                        -- This comment is between blocks.
+
+                        system TestSys is
+                          PartA: TestComponentA;
+                          PartB: TestComponentB;
+                          connect PartA to PartB via TestIface;
+                        end TestSys;
+
+                        component TestComp2 is
+                          -- Another inline comment
+                        end TestComp2;
+
+                        -- Here's a comment after the last block!
                         """
                     )
         , test "models can be embedded in Markdown" <|

@@ -13,6 +13,7 @@ end RestApi;
 
 -- Components describe atomic units of the system decomposition.
 -- They can fulfill interface specifications, and depend on them.
+
 component ExampleComponentA is
   fulfill DatabaseApi;
   require MonitoringApi;
@@ -32,9 +33,8 @@ system SimpleSystem is
   connect PartA to PartB via DatabaseApi;
   -- Systems may also fulfill interfaces via their subcomponents, and declare
   -- dependencies for them.
-  fulfill RestApi via PartB;
-  require MonitoringApi for PartA;
-  require MonitoringApi for PartB;
+  fulfill RestApi;
+  require MonitoringApi;
 end SimpleSystem;
 
 system CompositeSystem is

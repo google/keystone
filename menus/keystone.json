@@ -2,8 +2,8 @@
   "context-menu": {
     "atom-text-editor": [
       {
-        "label": "Toggle keystone",
-        "command": "keystone:toggle"
+        "label": "Parse with Keystone",
+        "command": "keystone:parse"
       }
     ]
   },
@@ -14,10 +14,6 @@
         {
           "label": "Keystone",
           "submenu": [
-            {
-              "label": "Toggle",
-              "command": "keystone:toggle"
-            },
             {
               "label": "Parse",
               "command": "keystone:parse"

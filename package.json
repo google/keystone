@@ -6,7 +6,8 @@
   "keywords": [
   ],
   "activationCommands": {
-    "atom-workspace": "keystone:toggle"
+    "atom-workspace": "keystone:toggle",
+    "atom-workspace": "keystone:parse"
   },
   "repository": "https://github.com/google/keystone",
   "license": "Apache",

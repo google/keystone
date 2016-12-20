@@ -13,6 +13,11 @@ type alias BlockName =
     String
 
 
+type ModelContainer
+    = Raw
+    | Markdown
+
+
 type Statement
     = SFulfill String
     | SRequire String
@@ -62,9 +67,7 @@ decl s p =
                 <* string ";"
     in
         (blockStart s >>= captureName)
-            *> skippables
-            *> p
-            <* skippables
+            *> (skippables *> p <* skippables)
             <* withState blockEnd
 
 
@@ -88,16 +91,6 @@ require =
             )
 
 
-component : Parser BlockName Declaration
-component =
-    let
-        build n =
-            -- TODO Skip comments
-            DComponent n <$> many (choice [ fulfill, require ])
-    in
-        decl "component" (withState build)
-
-
 instance : Parser s Statement
 instance =
     SInstance
@@ -116,11 +109,22 @@ connection =
 system : Parser BlockName Declaration
 system =
     let
+        allowedStatements =
+            [ instance, connection, fulfill, require ]
+
         build n =
-            (DSystem n)
-                <$> many (skippables *> choice [ instance, connection ])
+            DSystem n <$> many (skippables *> choice allowedStatements)
     in
         decl "system" (withState build)
+
+
+component : Parser BlockName Declaration
+component =
+    let
+        build n =
+            DComponent n <$> many (skippables *> choice [ fulfill, require ])
+    in
+        decl "component" (withState build)
 
 
 interface : Parser BlockName Declaration
@@ -130,21 +134,24 @@ interface =
 
 block : Parser BlockName Declaration
 block =
-    skippables *> choice [ component, system, interface ]
+    skippables *> choice [ component, system, interface ] <* skippables
 
 
-modelFile : Parser BlockName Model
-modelFile =
-    many block
+rawModel : Parser BlockName Model
+rawModel =
+    manyTill block end
 
 
 markdownModel : Parser BlockName Model
 markdownModel =
     concat
-        <$> many
-                (manyTill anyChar (string "```keystone")
+        <$> manyTill
+                ((manyTill anyChar (string "```keystone")
                     *> manyTill block (whitespace *> string "```")
+                 )
+                    <* many anyChar
                 )
+                end
 
 
 formatError : List String -> InputStream -> String
@@ -154,7 +161,7 @@ formatError ms stream =
             currentLocation stream
 
         separator =
-            "|> "
+            " |> "
 
         expectationSeparator =
             "\n  * "
@@ -163,10 +170,11 @@ formatError ms stream =
             String.length separator
 
         padding =
-            location.column + separatorOffset + 2
+            location.column + separatorOffset
     in
-        "Parse error around line:\n\n"
+        "Parse error around line "
             ++ toString location.line
+            ++ ":\n\n"
             ++ separator
             ++ location.source
             ++ "\n"
@@ -176,12 +184,18 @@ formatError ms stream =
             ++ String.join expectationSeparator ms
 
 
+parse : ModelContainer -> String -> Result String Model
+parse c s =
+    let
+        parser =
+            if c == Raw then
+                rawModel
+            else
+                markdownModel
+    in
+        case Combine.runParser parser "<toplevel>" s of
+            Ok ( _, _, e ) ->
+                Ok e
 
--- parse : String -> Result String Model
--- parse s =
---     case Combine.parse model s of
---         Ok ( _, _, e ) ->
---             Ok e
---
---         Err ( _, stream, ms ) ->
---             Err <| formatError ms stream
+            Err ( _, stream, ms ) ->
+                Err <| formatError ms stream

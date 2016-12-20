@@ -2,7 +2,16 @@ port module Keystone exposing (..)
 
 import Html exposing (..)
 import Html.Attributes as Att exposing (..)
-import Model as Mdl exposing (..)
+import Model as Mdl
+
+
+type alias UiModel =
+    {}
+
+
+type Msg
+    = Reset
+    | Parse Bool String
 
 
 main : Program Never UiModel Msg
@@ -20,30 +29,27 @@ init =
     ( UiModel, Cmd.none )
 
 
+type alias Notification =
+    { text : String
+    , isErr : Bool
+    }
+
+
 {-|
    Send a notification to the user.
 -}
-port notify : String -> Cmd msg
+port notify : Notification -> Cmd msg
 
 
 {-|
    Request a parse of the given string, generally buffer text from Atom.
 -}
-port parse : (String -> msg) -> Sub msg
+port parse : (( Bool, String ) -> msg) -> Sub msg
 
 
 subscriptions : UiModel -> Sub Msg
 subscriptions model =
-    parse Parse
-
-
-type alias UiModel =
-    {}
-
-
-type Msg
-    = Reset
-    | Parse String
+    parse (\( isMd, text ) -> Parse isMd text)
 
 
 update : Msg -> UiModel -> ( UiModel, Cmd Msg )
@@ -52,8 +58,27 @@ update msg model =
         Reset ->
             ( model, Cmd.none )
 
-        Parse text ->
-            ( model, notify text )
+        Parse isMd text ->
+            let
+                container =
+                    if isMd then
+                        Mdl.Markdown
+                    else
+                        Mdl.Raw
+
+                parseResult =
+                    case Mdl.parse container text of
+                        Ok m ->
+                            { isErr = False
+                            , text = "Parse result: " ++ toString m
+                            }
+
+                        Err e ->
+                            { isErr = True
+                            , text = e
+                            }
+            in
+                ( model, notify parseResult )
 
 
 
