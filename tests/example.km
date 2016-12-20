@@ -3,22 +3,38 @@
 
 -- Comments start with the "--" delimiter.
 
+-- Interfaces describe the externally-visible operations of a system.
+
+interface DatabaseApi is
+end DatabaseApi;
+
+interface RestApi is
+end RestApi;
+
 -- Components describe atomic units of the system decomposition.
+-- They can fulfill interface specifications, and depend on them.
 component ExampleComponentA is
+  fulfill DatabaseApi;
+  require MonitoringApi;
 end ExampleComponentA;
 
 component ExampleComponentB is
+  fulfill RestApi;
+  require DatabaseApi;
+  require MonitoringApi;
 end ExampleComponentB;
 
-channel RestApi is
-end RestApi;
-
 -- Systems combine components and other systems into larger units, and may also
--- contain channels that connect the components.
+-- contain channels that connect the components via their interfaces.
 system SimpleSystem is
   PartA: ExampleComponentA;
   PartB: ExampleComponentB;
-  connect PartA to PartB via RestApi;
+  connect PartA to PartB via DatabaseApi;
+  -- Systems may also fulfill interfaces via their subcomponents, and declare
+  -- dependencies for them.
+  fulfill RestApi via PartB;
+  require MonitoringApi for PartA;
+  require MonitoringApi for PartB;
 end SimpleSystem;
 
 system CompositeSystem is
