@@ -4,6 +4,10 @@
       {
         "label": "Parse with Keystone",
         "command": "keystone:parse"
+      },
+      {
+        "label": "Render DSM",
+        "command": "keystone:renderDsm"
       }
     ]
   },
@@ -17,6 +21,10 @@
             {
               "label": "Parse",
               "command": "keystone:parse"
+            },
+            {
+              "label": "Render DSM",
+              "command": "keystone:renderDsm"
             }
           ]
         }

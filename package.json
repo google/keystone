@@ -5,9 +5,16 @@
   "description": "Architectural analysis and simulation",
   "keywords": [
   ],
+  "activationHooks": [
+    "keystone:grammar-used",
+    "language-markdown:grammar-used",
+    "language-gfm:grammar-used"
+  ],
   "activationCommands": {
-    "atom-workspace": "keystone:toggle",
-    "atom-workspace": "keystone:parse"
+    "atom-workspace": [
+      "keystone:parse",
+      "keystone:renderDsm"
+     ]
   },
   "repository": "https://github.com/google/keystone",
   "license": "Apache",

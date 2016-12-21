@@ -3,15 +3,15 @@
 'fileTypes': ['km']
 'patterns': [
   {
-    'begin': '(system|component|channel) +([^ ]+) +is'
+    'begin': '(system|component|interface) +([^ ]+) +is'
     'beginCaptures':
       '2':
-        'name': 'variable.keystone'
+        'name': 'meta.class.keystone'
     'end': 'end +([^ ]+);'
     'endCaptures':
       '1':
-        'name': 'variable.keystone'
-    'name': 'keyword.control.start-block.keystone'
+        'name': 'meta.class.keystone'
+    'name': 'keyword.definition.start-block.keystone'
     'patterns': [
       {
         'match': 'connect +([^ ]+) +to +([^ ]+) +via +([^ ]+);'
@@ -21,8 +21,15 @@
           '2':
             'name': 'variable.keystone'
           '3':
-            'name': 'variable.keystone'
+            'name': 'meta.class.keystone'
         'name': 'keyword.control.keystone'
+      }
+      {
+        'match': '(fulfill|require) +([^ ]+);'
+        'captures':
+          '2':
+            'name': 'meta.class.keystone'
+        'name': 'keyword.definition.keystone'
       }
       {
         'match': '([^ ]+): ([^ ]+);'
@@ -32,11 +39,17 @@
           '2':
             'name': 'meta.class.keystone'
       }
+      {
+        'include': '#comments'
+      }
     ]
   }
-
   {
+    'include': '#comments'
+  }
+]
+'repository':
+  'comments': {
     'match': '--[^\\n]*'
     'name': 'comment.leading.keystone'
   }
-]
