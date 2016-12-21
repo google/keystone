@@ -11,6 +11,9 @@ end DatabaseApi;
 interface RestApi is
 end RestApi;
 
+interface MonitoringApi is
+end MonitoringApi;
+
 -- Components describe atomic units of the system decomposition.
 -- They can fulfill interface specifications, and depend on them.
 
@@ -41,3 +44,10 @@ system CompositeSystem is
   Frontend: SimpleSystem;
   Backend: ExampleComponentB;
 end CompositeSystem;
+
+system CompositeSystemB is
+  Frontend: SimpleSystem;
+  Backend: CompositeSystem;
+  fulfill RestApi;
+  require MonitoringApi;
+end CompositeSystemB;

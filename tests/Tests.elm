@@ -5,11 +5,12 @@ import Expect
 import Model exposing (..)
 import Combine exposing (..)
 import String
+import Dict
 
 
 all : Test
 all =
-    describe "keystone" [ parsing ]
+    describe "keystone" [ parsing, interrogating ]
 
 
 isErr : Result s t -> Bool
@@ -197,5 +198,36 @@ parsing =
 
                         This is the end of the model.
                         """
+                    )
+        ]
+
+
+interrogating : Test
+interrogating =
+    describe "interrogating models"
+        [ test "models can be queried for their connections" <|
+            \() ->
+                Expect.equal
+                    (Dict.fromList
+                        [ ( "TestIface", [] )
+                        , ( "TestComp", [ "TestIface" ] )
+                        ]
+                    )
+                    (connections
+                        [ DInterface "TestIface"
+                        , DComponent "TestComp" [ SFulfill "TestIface" ]
+                        ]
+                    )
+        , test "models can be queried for their reversed connections" <|
+            \() ->
+                Expect.equal
+                    (Dict.fromList
+                        [ ( "TestIface", [ "TestComp" ] )
+                        ]
+                    )
+                    (reverseConnections
+                        [ DInterface "TestIface"
+                        , DComponent "TestComp" [ SFulfill "TestIface" ]
+                        ]
                     )
         ]

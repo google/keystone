@@ -3,6 +3,7 @@ module Model exposing (..)
 import Combine exposing (..)
 import Combine.Char exposing (..)
 import List exposing (concat)
+import Dict exposing (Dict, insert)
 
 
 type alias Model =
@@ -29,6 +30,12 @@ type Declaration
     = DInterface String
     | DComponent String (List Statement)
     | DSystem String (List Statement)
+
+
+
+{-
+   Parsing of Keystone models from text
+-}
 
 
 comment : Parser s String
@@ -199,3 +206,70 @@ parse c s =
 
             Err ( _, stream, ms ) ->
                 Err <| formatError ms stream
+
+
+
+{- Interrogating models -}
+
+
+{-| Query the model for forward dependencies. Returns a Dict mapping from the
+entity name to the names of entities that it depends on.
+-}
+connections : Model -> Dict.Dict String (List String)
+connections m =
+    let
+        toName s =
+            case s of
+                SFulfill n ->
+                    n
+
+                SRequire n ->
+                    n
+
+                SInstance _ n ->
+                    n
+
+                SConnect _ _ n ->
+                    n
+
+        toNames s =
+            List.map toName s
+
+        toConnections d =
+            case d of
+                DInterface n ->
+                    ( n, [] )
+
+                DComponent n s ->
+                    ( n, toNames s )
+
+                DSystem n s ->
+                    ( n, toNames s )
+    in
+        Dict.fromList (List.map toConnections m)
+
+
+{-| Query the model for inverse dependencies. Returns a Dict mapping from the
+entity name to the names of entities that depend on it.
+-}
+reverseConnections : Model -> Dict.Dict String (List String)
+reverseConnections m =
+    let
+        mapDep name dep d =
+            case Dict.get dep d of
+                Just names ->
+                    Dict.insert dep (name :: names) d
+
+                Nothing ->
+                    Dict.insert dep [ name ] d
+
+        addDeps name deps d =
+            -- d is the reverse map holding name -> dependants
+            -- name is the name of an entity, and deps is the list of its deps
+            -- Map over the dependencies, and add "name" to the list of their dependants
+            List.foldl
+                (mapDep name)
+                d
+                deps
+    in
+        Dict.foldl addDeps Dict.empty (connections m)
