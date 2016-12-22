@@ -1,20 +1,25 @@
 port module Keystone exposing (..)
 
 import Html exposing (..)
-import Html.Attributes as Att exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
+import Maybe exposing (withDefault)
 import Model as Mdl
-import List
+import List exposing (append, take, drop, head, tail, any, length)
 import Dict
 import Tuple exposing (first)
 
 
 type alias UiModel =
-    { sysModel : Maybe Mdl.Model }
+    { sysModel : Maybe Mdl.Model
+    , rowOrder : List String
+    }
 
 
 type Msg
-    = Reset
-    | Parse Bool String
+    = Parse Bool String
+    | MoveUp String
+    | MoveDown String
 
 
 main : Program Never UiModel Msg
@@ -30,6 +35,7 @@ main =
 init : ( UiModel, Cmd Msg )
 init =
     ( { sysModel = Nothing
+      , rowOrder = []
       }
     , Cmd.none
     )
@@ -59,11 +65,73 @@ subscriptions model =
     parse (\( isMd, text ) -> Parse isMd text)
 
 
+split : List a -> a -> ( List a, List a )
+split l a =
+    let
+        mh =
+            head l
+
+        mt =
+            tail l
+    in
+        case mh of
+            Nothing ->
+                ( [], [] )
+
+            Just h ->
+                if h == a then
+                    ( [], l )
+                else
+                    let
+                        ( hs, ts ) =
+                            split (withDefault [] mt) a
+                    in
+                        ( h :: hs, ts )
+
+
+moveUp : List a -> a -> List a
+moveUp l e =
+    let
+        ( before, after ) =
+            split l e
+
+        lb =
+            length before
+
+        newBefore =
+            take (lb - 1) before
+
+        newAfter =
+            append (drop (lb - 1) before) (withDefault [] (tail after))
+    in
+        append newBefore <| e :: newAfter
+
+
+moveDown : List a -> a -> List a
+moveDown l e =
+    let
+        ( before, after ) =
+            split l e
+    in
+        case after of
+            [] ->
+                l
+
+            [ e ] ->
+                l
+
+            e :: n :: rs ->
+                append before (n :: e :: rs)
+
+
 update : Msg -> UiModel -> ( UiModel, Cmd Msg )
 update msg uiModel =
     case msg of
-        Reset ->
-            ( uiModel, Cmd.none )
+        MoveDown name ->
+            ( { uiModel | rowOrder = moveDown uiModel.rowOrder name }, Cmd.none )
+
+        MoveUp name ->
+            ( { uiModel | rowOrder = moveUp uiModel.rowOrder name }, Cmd.none )
 
         Parse isMd text ->
             let
@@ -84,6 +152,14 @@ update msg uiModel =
                         Err e ->
                             Nothing
 
+                newOrder =
+                    case newModel of
+                        Just m ->
+                            Dict.keys <| Mdl.connections m
+
+                        Nothing ->
+                            []
+
                 resultMessage =
                     case parseResult of
                         Ok m ->
@@ -98,12 +174,17 @@ update msg uiModel =
                             , text = e
                             }
             in
-                ( { uiModel | sysModel = newModel }, notify resultMessage )
+                ( { uiModel
+                    | sysModel = newModel
+                    , rowOrder = newOrder
+                  }
+                , notify resultMessage
+                )
 
 
 find : a -> List a -> Bool
 find n ns =
-    List.any (\x -> x == n) ns
+    any (\x -> x == n) ns
 
 
 rowIdentifier : String -> List String -> Int
@@ -118,38 +199,53 @@ rowIdentifier n ns =
         first <| List.foldl findIndex ( 0, False ) ns
 
 
-dsmHeaders : Mdl.Model -> Html msg
-dsmHeaders model =
+dsmHeaders : Mdl.Model -> List String -> Html msg
+dsmHeaders model rowOrder =
     let
         connections =
             Mdl.connections model
-
-        names =
-            Dict.keys connections
     in
         tr [ class "keystone dsm-header" ] <|
-            List.append [ th [] [ text "Name" ], th [] [ text "#" ] ]
+            append
+                [ th [ colspan 2 ] [ text "Reorder" ]
+                , th [] [ text "Name" ]
+                , th [] [ text "#" ]
+                ]
                 (List.map
-                    (\n -> th [] [ text <| toString <| rowIdentifier n names ])
-                    names
+                    (\n -> th [] [ text <| toString <| rowIdentifier n rowOrder ])
+                    rowOrder
                 )
 
 
-dsmRows : Mdl.Model -> List (Html Msg)
-dsmRows model =
+dsmRows : Mdl.Model -> List String -> List (Html Msg)
+dsmRows model rowOrder =
     let
         connections =
             Mdl.connections model
 
-        names =
-            Dict.keys connections
+        getDeps rowName =
+            ( rowName, withDefault [] <| Dict.get rowName connections )
 
         toRow ( rowName, rowDeps ) =
             tr [ class "dsm-row" ] <|
-                List.append
-                    [ td [ class "dsm-row-label" ] [ text rowName ]
+                append
+                    [ td [ class "dsm-up-button" ]
+                        [ button
+                            [ class "btn icon icon-chevron-up"
+                            , onClick <| MoveUp rowName
+                            ]
+                            []
+                        ]
+                    , td [ class "dsm-up-button" ]
+                        [ button
+                            [ class "btn icon icon-chevron-down"
+                            , onClick <| MoveDown rowName
+                            ]
+                            []
+                        ]
+                    , td [ class "dsm-row-label" ] [ text rowName ]
                     , td [ class "dsm-row-number" ]
-                        [ text <| toString <| rowIdentifier rowName names
+                        [ text <| toString <| rowIdentifier rowName rowOrder
                         ]
                     ]
                 <|
@@ -166,18 +262,18 @@ dsmRows model =
                             else
                                 td [] []
                         )
-                        names
+                        rowOrder
     in
-        List.map toRow (Dict.toList connections)
+        List.map toRow <| List.map getDeps rowOrder
 
 
-generateDsm : Maybe Mdl.Model -> Html Msg
-generateDsm m =
+generateDsm : Maybe Mdl.Model -> List String -> Html Msg
+generateDsm m rowOrder =
     case m of
         Just model ->
             div []
                 [ table [ id "keystone-dsm", class "keystone dsm" ]
-                    (dsmHeaders model :: dsmRows model)
+                    (dsmHeaders model rowOrder :: dsmRows model rowOrder)
                 ]
 
         Nothing ->
@@ -192,5 +288,5 @@ view model =
         , text """This view displays connections between model elements.
            An 'X' denotes a connection, where the component in the row depends
            on the component in the column."""
-        , generateDsm model.sysModel
+        , generateDsm model.sysModel model.rowOrder
         ]

@@ -6,11 +6,12 @@ import Model exposing (..)
 import Combine exposing (..)
 import String
 import Dict
+import Keystone exposing (split, moveUp, moveDown)
 
 
 all : Test
 all =
-    describe "keystone" [ parsing, interrogating ]
+    describe "keystone" [ uiHelpers, parsing, interrogating ]
 
 
 isErr : Result s t -> Bool
@@ -41,6 +42,20 @@ doParse p i =
                         ++ ": "
                         ++ location.source
                     )
+
+
+uiHelpers : Test
+uiHelpers =
+    describe "UI helpers"
+        [ test "lists can be split" <|
+            \() ->
+                Expect.equal ( [ 1, 2, 3 ], [ 4, 5, 6, 7 ] )
+                    (split [ 1, 2, 3, 4, 5, 6, 7 ] 4)
+        , test "elements can be moved up in lists" <|
+            \() -> Expect.equal [ 1, 3, 2 ] <| moveUp [ 1, 2, 3 ] 3
+        , test "elements can be moved down in lists" <|
+            \() -> Expect.equal [ 2, 1, 3 ] <| moveDown [ 1, 2, 3 ] 1
+        ]
 
 
 parsing : Test
