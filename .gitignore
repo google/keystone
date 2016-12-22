@@ -2,3 +2,4 @@ build
 elm-stuff
 repl-temp-*
 node_modules
+*.log
