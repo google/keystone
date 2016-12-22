@@ -1,13 +1,16 @@
 port module Keystone exposing (..)
 
 import Html exposing (..)
-import Html.Attributes exposing (..)
+import Html.Attributes exposing (class, id, colspan, title)
 import Html.Events exposing (onClick)
 import Maybe exposing (withDefault)
 import Model as Mdl
 import List exposing (append, take, drop, head, tail, any, length)
 import Dict
 import Tuple exposing (first)
+import Svg exposing (svg, rect, line, circle, g, Svg)
+import Svg.Attributes as SAtts exposing (x, y, x1, x2, y1, y2, r, cx, cy, viewBox, width, height, preserveAspectRatio, transform)
+import Set
 
 
 type alias UiModel =
@@ -165,7 +168,7 @@ update msg uiModel =
                         Ok m ->
                             { isErr = False
                             , isSuccess = True
-                            , text = "Parse successful"
+                            , text = "Keystone model loaded successfully"
                             }
 
                         Err e ->
@@ -279,28 +282,129 @@ dsmRows model rowOrder =
         List.map toRow <| List.map getDeps rowOrder
 
 
-generateDsm : Maybe Mdl.Model -> List String -> Html Msg
-generateDsm m rowOrder =
-    case m of
-        Just model ->
-            div []
-                [ table [ id "keystone-dsm", class "keystone dsm" ]
-                    (dsmHeaders model rowOrder :: dsmRows model rowOrder)
+generateDsm : Mdl.Model -> List String -> Html Msg
+generateDsm model rowOrder =
+    div []
+        [ table [ id "keystone-dsm", class "keystone dsm" ]
+            (dsmHeaders model rowOrder :: dsmRows model rowOrder)
+        ]
+
+
+type HiveAxis
+    = Source
+    | Hub
+    | Sink
+
+
+hiveTransform : HiveAxis -> String
+hiveTransform a =
+    case a of
+        Source ->
+            "rotate(-120)"
+
+        Sink ->
+            "rotate(120)"
+
+        Hub ->
+            "rotate(0)"
+
+
+hiveAxes : Svg Msg
+hiveAxes =
+    g []
+        [ line [ x1 "0", y1 "0", x2 "0", y2 "-100", transform <| hiveTransform Hub ] []
+        , line [ x1 "0", y1 "0", x2 "0", y2 "-100", transform <| hiveTransform Sink ] []
+        , line [ x1 "0", y1 "0", x2 "0", y2 "-100", transform <| hiveTransform Source ] []
+        ]
+
+
+hiveNodes : Mdl.Model -> Svg Msg
+hiveNodes m =
+    let
+        connections =
+            Mdl.connections m
+
+        revConnections =
+            Mdl.reverseConnections m
+
+        maxArity name =
+            max (length (withDefault [] <| Dict.get name connections))
+                (length (withDefault [] <| Dict.get name revConnections))
+
+        getAxis name =
+            if Dict.member name connections then
+                if Dict.member name revConnections then
+                    Hub
+                else
+                    Source
+            else
+                Sink
+
+        getClass axis =
+            case axis of
+                Hub ->
+                    "hive-hub"
+
+                Source ->
+                    "hive-source"
+
+                Sink ->
+                    "hive-sink"
+
+        toNode name =
+            circle
+                [ cx "0"
+                , cy <| toString <| (maxArity name) * -20
+                , r "3"
+                , transform <| hiveTransform (getAxis name)
+                , SAtts.class <| getClass (getAxis name)
+                ]
+                [ Svg.title [] [ Svg.text name ] ]
+    in
+        g [] <|
+            List.map
+                toNode
+                (Set.toList
+                    (Set.union (Set.fromList (Dict.keys connections))
+                        (Set.fromList (Dict.keys revConnections))
+                    )
+                )
+
+
+generateHivePlot : Mdl.Model -> Html Msg
+generateHivePlot m =
+    div [ class "keystone-hive" ]
+        [ Svg.svg
+            [ viewBox "-120 -120 240 240"
+            , preserveAspectRatio "xMinYMin meet"
+            ]
+            [ hiveAxes
+            , hiveNodes m
+            ]
+        ]
+
+
+view : UiModel -> Html Msg
+view model =
+    case model.sysModel of
+        Just m ->
+            div [ id "keystone-main" ]
+                [ h1 [] [ text "Keystone" ]
+                , h2 [] [ text "Design Structure Matrix" ]
+                , text """This view displays connections between model elements.
+               An 'D' denotes a dependency, where the component in the row depends
+               on the component in the column. A 'P' indicates a provides
+               relationship, where the component in the row fulfills a dependency of
+              the row in the column."""
+                , generateDsm m model.rowOrder
+                , h2 [] [ text "Hive Plot" ]
+                , text """A Hive Plot shows network connectivity properties more
+                consistently than standard network graphs. Nodes in the graph
+                are assigned to the three axes based on the arity of their
+                inbound and outbound connections."""
+                , generateHivePlot m
                 ]
 
         Nothing ->
             ul [ class "background-message centered" ]
                 [ li [] [ text "No model to render" ] ]
-
-
-view : UiModel -> Html Msg
-view model =
-    div [ id "keystone-main" ]
-        [ h1 [] [ text "Keystone: DSM View" ]
-        , text """This view displays connections between model elements.
-           An 'D' denotes a dependency, where the component in the row depends
-           on the component in the column. A 'P' indicates a provides
-           relationship, where the component in the row fulfills a dependency of
-          the row in the column."""
-        , generateDsm model.sysModel model.rowOrder
-        ]

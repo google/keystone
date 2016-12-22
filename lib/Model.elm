@@ -232,8 +232,16 @@ connections m =
                 SConnect _ _ n ->
                     n
 
+        isDep s =
+            case s of
+                SFulfill _ ->
+                    False
+
+                _ ->
+                    True
+
         toNames s =
-            List.map toName s
+            List.map toName <| List.filter isDep s
 
         toConnections d =
             case d of

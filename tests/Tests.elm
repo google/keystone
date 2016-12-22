@@ -230,7 +230,7 @@ interrogating =
                     )
                     (connections
                         [ DInterface "TestIface"
-                        , DComponent "TestComp" [ SFulfill "TestIface" ]
+                        , DComponent "TestComp" [ SRequire "TestIface" ]
                         ]
                     )
         , test "models can be queried for their reversed connections" <|
@@ -242,7 +242,7 @@ interrogating =
                     )
                     (reverseConnections
                         [ DInterface "TestIface"
-                        , DComponent "TestComp" [ SFulfill "TestIface" ]
+                        , DComponent "TestComp" [ SRequire "TestIface" ]
                         ]
                     )
         ]

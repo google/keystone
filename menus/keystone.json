@@ -2,11 +2,11 @@
   "context-menu": {
     "atom-text-editor": [
       {
-        "label": "Parse with Keystone",
+        "label": "Reload Keystone Model",
         "command": "keystone:parse"
       },
       {
-        "label": "Render DSM",
+        "label": "View Keystone Model",
         "command": "keystone:renderDsm"
       }
     ]
@@ -19,11 +19,11 @@
           "label": "Keystone",
           "submenu": [
             {
-              "label": "Parse",
+              "label": "Reload Model",
               "command": "keystone:parse"
             },
             {
-              "label": "Render DSM",
+              "label": "View Model",
               "command": "keystone:renderDsm"
             }
           ]
