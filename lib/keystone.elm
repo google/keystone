@@ -223,10 +223,16 @@ dsmRows model rowOrder =
         connections =
             Mdl.connections model
 
-        getDeps rowName =
-            ( rowName, withDefault [] <| Dict.get rowName connections )
+        revConnections =
+            Mdl.reverseConnections model
 
-        toRow ( rowName, rowDeps ) =
+        getDeps rowName =
+            ( rowName
+            , withDefault [] <| Dict.get rowName connections
+            , withDefault [] <| Dict.get rowName revConnections
+            )
+
+        toRow ( rowName, rowDeps, revDeps ) =
             tr [ class "dsm-row" ] <|
                 append
                     [ td [ class "dsm-up-button" ]
@@ -256,7 +262,13 @@ dsmRows model rowOrder =
                                     [ class "dsm-dep-link"
                                     , title <| rowName ++ " depends on " ++ n
                                     ]
-                                    [ text "X" ]
+                                    [ text "D" ]
+                            else if find n revDeps then
+                                td
+                                    [ class "dsm-provides-link"
+                                    , title <| rowName ++ " is depended on by " ++ n
+                                    ]
+                                    [ text "P" ]
                             else if n == rowName then
                                 td [ class "dsm-self-link" ] [ text "X" ]
                             else
@@ -286,7 +298,9 @@ view model =
     div [ id "keystone-main" ]
         [ h1 [] [ text "Keystone: DSM View" ]
         , text """This view displays connections between model elements.
-           An 'X' denotes a connection, where the component in the row depends
-           on the component in the column."""
+           An 'D' denotes a dependency, where the component in the row depends
+           on the component in the column. A 'P' indicates a provides
+           relationship, where the component in the row fulfills a dependency of
+          the row in the column."""
         , generateDsm model.sysModel model.rowOrder
         ]
