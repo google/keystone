@@ -38,6 +38,7 @@ init =
 type alias Notification =
     { text : String
     , isErr : Bool
+    , isSuccess : Bool
     }
 
 
@@ -87,11 +88,13 @@ update msg uiModel =
                     case parseResult of
                         Ok m ->
                             { isErr = False
-                            , text = "Parse result: " ++ toString m
+                            , isSuccess = True
+                            , text = "Parse successful"
                             }
 
                         Err e ->
                             { isErr = True
+                            , isSuccess = False
                             , text = e
                             }
             in
