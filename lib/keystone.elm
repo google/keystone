@@ -5,12 +5,28 @@ import Html.Attributes exposing (class, id, colspan, title)
 import Html.Events exposing (onClick)
 import Maybe exposing (withDefault)
 import Model as Mdl
-import List exposing (append, take, drop, head, tail, any, length)
 import Dict
+import Set
+import List exposing (append, take, drop, head, tail, any, length)
 import Tuple exposing (first)
 import Svg exposing (svg, rect, line, circle, g, Svg)
-import Svg.Attributes as SAtts exposing (x, y, x1, x2, y1, y2, r, cx, cy, viewBox, width, height, preserveAspectRatio, transform)
-import Set
+import Svg.Attributes as SAtts
+    exposing
+        ( x
+        , y
+        , x1
+        , x2
+        , y1
+        , y2
+        , r
+        , cx
+        , cy
+        , viewBox
+        , width
+        , height
+        , preserveAspectRatio
+        , transform
+        )
 
 
 type alias UiModel =
