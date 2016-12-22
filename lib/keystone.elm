@@ -181,7 +181,8 @@ generateDsm m =
                 ]
 
         Nothing ->
-            div [] [ text "No model to render" ]
+            ul [ class "background-message centered" ]
+                [ li [] [ text "No model to render" ] ]
 
 
 view : UiModel -> Html Msg
