@@ -3,7 +3,17 @@
 Keystone is an architectural analysis toolset integrated in the Atom text
 editor. It allows software engineers to create models of system architectures
 which can be used to guide development decisions through analysis and
-simulation.
+simulation. The modelling and simulation capabilities are inspired by Palladio,
+a powerful analysis tool integrated into Eclipse, but with models represented in
+a plain text language. This yields some compelling benefits over the binary blob
+approach:
+
++ Models can be checked into version control
++ A common on-disk format enables integration with other tools, including design
+rules checkers
++ Human-readable text can be viewed and considered without special tooling
++ Support for multiple formats can be added; Keystone currently supports models
+embedded in Markdown files
 
 ## Building
 
