@@ -1,33 +1,60 @@
-# Keystone architectural analysis tool
+# Keystone
 
-##  Headline features
-+ Domain language for describing architectural models
-+ generated interactive design structure matrix views
-+ generated SysML views
-+ integrated simulation environment for latency and stability analysis
-+ requirements language with traceability features links requirements to model features
+Keystone is an architectural analysis toolset integrated in the Atom text
+editor. It allows software engineers to create models of system architectures
+which can be used to guide development decisions through analysis and
+simulation.
 
-##  Possible approaches
-+ server hosted web app
-  + stores data in a database
-  + easily accessible with zero install
-  + user login management required
-  + difficult to integrate with source control
-  + possibly easier to distribute simulations
-+ command line tools
-  + independent tools are easier to integrate into existing flows 
-  + data stored in text files can be version controlled
-  + longer feedback loop
-  + less discoverable
-  + requires installation
-  + more language options
-+ standalone desktop app
-  + can integrate graphical tools more easily
-  + full control over UI presentation
-  + more work to get common things working
-  + limited language options
-+ atom extension
-  + already have full text editor
-  + can add UI elements via HTML
-  + can integrate between text editor and graphical tools
-  + difficult to integrate into other tools such as continuous integration systems
+## Building
+
+To build the project, follow these steps:
+
+1. Install the latest [Atom](https://atom.io) release for your system.
+2. Clone the repository.
+3. Install the Elm toolset: `npm install -g elm elm-test`
+4. Run the build script: `./build.sh`
+5. Link Keystone to your Atom packages directory: `apm link keystone`
+6. Start Atom in developer mode with `atom -d` or `View > Developer > Open In
+Dev Mode`
+
+Keystone uses Elm, a strongly-typed functional language, for the bulk of its
+logic. You will need to recompile the project before your changes to any `.elm`
+files will be visible in Atom. Generally, the edit flow goes something like
+this:
+
+1. Make a change to an Elm file.
+2. Run `./build.sh`, and fix any compile or test failures.
+3. Reload Atom (`Alt+Ctrl+R` on Linux, `Cmd+Option+Ctrl+L` on OSX, or `View >
+Developer > Reload Window` anywhere).
+4. Test the change in Atom.
+
+## Contributing
+
+We'd love to accept your patches and contributions to this project. Here are a
+few small guidelines you need to follow.
+
+### Contributor License Agreement
+
+Contributions to any Google project must be accompanied by a Contributor License
+Agreement. This is necessary because you own the copyright to your changes, even
+after your contribution becomes part of this project, so this agreement simply
+gives us permission to use and redistribute your contributions as part of the
+project. Head over to <https://cla.developers.google.com/> to see your current
+agreements on file or to sign a new one.
+
+You generally only need to submit a CLA once, so if you've already submitted one
+(even if it was for a different project), you probably don't need to do it
+again.
+
+### Code reviews
+
+All submissions, including submissions by project members, require review. We
+use GitHub pull requests for this purpose. Consult [GitHub Help] for more
+information on using pull requests.
+
+[GitHub Help]: https://help.github.com/articles/about-pull-requests/
+
+## Disclaimer
+
+Please note that while Keystone is an open-source project started by Google
+engineers, it is *not* an official Google product.

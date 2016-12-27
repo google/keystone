@@ -12,7 +12,7 @@ Keystone reads to generate visualizations and run simulations.
 ### Model Language
 
 Models are represented as text in the modeling DSL. The language supports
-designing with **components**, **systems**, and **channels**.
+designing with **components**, **systems**, and **interfaces**.
 
 + A **component** is an atomic black box, and forms the fundamental unit of
 behavior.
@@ -20,7 +20,8 @@ behavior.
 + A **system** is an aggregation of components and other systems which
 together can be treated as a unit.
 
-+ **Channels** connect components together, enabling them to pass messages.
++ **Interfaces** describe how components connect to each other, enabling them to
+pass messages to and invoke behavior on other components.
 
 ### Internal Representation
 
@@ -39,6 +40,9 @@ systems to reveal dependencies and enable modularization.
 
 + Sequence Diagram - Displays the chain of events performed in a simulation
 scenario.
+
++ (Hive Plot)[https://www.hiveplot.net] - Displays the network connectivity of a
+model in a consistent format that's easy to analyze.
 
 ## Simulations
 
